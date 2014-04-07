@@ -9,8 +9,8 @@ SelfDestruct_FILES = SelfDestruct.xm
 SelfDestruct_FRAMEWORKS = UIKit
 
 include $(THEOS_MAKE_PATH)/tweak.mk
-# SUBPROJECTS = SDListener
-# include $(THEOS_MAKE_PATH)/aggregate.mk
+SUBPROJECTS = SDListener
+include $(THEOS_MAKE_PATH)/aggregate.mk
 
 internal-after-install::
 	install.exec "killall -9 backboardd"

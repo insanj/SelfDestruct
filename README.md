@@ -2,6 +2,8 @@
 
 Kill foreground app (in case of emergency).
 
+[Bomb](http://thenounproject.com/term/bomb/33642/]) designed by Cris Dobbins from the Noun Project.
+
 ---------------------------------------
 [Creative Commons Attribution-NonCommercial 3.0 United States License](http://creativecommons.org/licenses/by-nc/3.0/us/) as of 2014:
 

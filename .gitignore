@@ -5,3 +5,6 @@ obj
 .DS_Store
 *.deb
 debs
+*.o
+*.stamp
+.stamp

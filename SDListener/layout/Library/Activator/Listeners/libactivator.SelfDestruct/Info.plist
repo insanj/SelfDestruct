@@ -1,0 +1,4 @@
+{
+	title = "SelfDestruct";
+	description = "Kill foreground app (in case of emergency)";
+}
