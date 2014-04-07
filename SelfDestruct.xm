@@ -8,19 +8,26 @@
 @end
 
 %ctor {
-	NSString *identifier = ((SBApplication *)[UIApplication sharedApplication]).displayIdentifier;
-	if ([identifier isEqualToString:@"com.apple.springboard"]) {
-		NSLog(@"[SelfDestruct] Was going to load into foreground process, but it's SpringBoard...");
+	NSString __block *name = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"];
+	if (!name) {
+		NSLog(@"[SelfDestruct] Was going to load into foreground process, but it's invalid / SB...");
 	}
 
 	else {
-		NSLog(@"[SelfDestruct] Removing previous bomb-dropper to prepare for %@'s...", identifier);
-		[[NSDistributedNotificationCenter defaultCenter] removeObserver:nil name:@"SDDropBomb" object:nil];
+		NSLog(@"[SelfDestruct] Loading into foreground process (%@), waiting for load to add bombers...", name);
 
-		[[NSDistributedNotificationCenter defaultCenter] addObserverForName:@"SDDropBomb" object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *notification){
-			NSLog(@"[SelfDestruct] Have a nice day!");
-			NSString *command = [NSString stringWithFormat:@"killall -9 %@", [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"]];
-			system([command UTF8String]);
+		[[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidFinishLaunchingNotification object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *notification){
+			NSLog(@"[SelfDestruct] Detected completed launch (%@), preparing for bomb drop...", name);
+			[[NSDistributedNotificationCenter defaultCenter] addObserverForName:@"SDDropBomb" object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *notification){
+				NSLog(@"[SelfDestruct] %@, have a nice day!", name);
+				system([[NSString stringWithFormat:@"killall -9 %@", name] UTF8String]);
+			}];
 		}];
+
+		[[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *notification){
+			NSLog(@"[SelfDestruct] Detected completed resignation (%@), removing previous bombers...", name);
+			[[NSDistributedNotificationCenter defaultCenter] removeObserver:nil name:@"SDDropBomb" object:nil];
+		}];
+
 	}
 }
