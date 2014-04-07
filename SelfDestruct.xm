@@ -7,7 +7,7 @@
 
 	if (frontMostApp) {
 		NSLog(@"[SelfDestruct] %@, have a nice day!", frontMostApp.displayName);
-		system([[NSString stringWithFormat:@"kill %i", frontMostApp.pid] UTF8String]);
+		kill(frontMostApp.pid, SIGTERM);
 	}
 
 	else {
