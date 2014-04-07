@@ -1,33 +1,40 @@
-#include <UIKit/UIKit.h>
+#import "SelfDestruct.h"
 
-@interface NSDistributedNotificationCenter : NSNotificationCenter
-@end
+@implementation SelfDestruct
 
-@interface SBApplication : UIApplication
-- (id)displayIdentifier;
-@end
+/*static NSString *destruct_pullFrontAppIdentifier() {
+	char frontAppIdentifier[256];
+	memset(frontAppIdentifier, sizeof(frontAppIdentifier), 0);
+	SBFrontmostApplicationDisplayIdentifier(SBSSpringBoardServerPort(), frontAppIdentifier);
+	return [NSString stringWithCString:frontAppIdentifier encoding:NSASCIIStringEncoding];
+}*/
 
-%ctor {
-	NSString __block *name = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"];
-	if (!name) {
-		NSLog(@"[SelfDestruct] Was going to load into foreground process, but it's invalid / SB...");
+static NSString *destruct_copyFrontAppIdentifier() {
+	return SBSCopyFrontmostApplicationDisplayIdentifier();
+}
+
+- (void)activator:(LAActivator *)activator receiveEvent:(LAEvent *)event {
+	NSLog(@"[SelfDestruct / DEBUG] Received activator event...");
+	NSString *front = destruct_copyFrontAppIdentifier();
+	NSLog(@"[SelfDestruct / DEBUG] Detected frontmost: %@", front);
+
+	if (!front) {
+		NSLog(@"[SelfDestruct / DEBUG] Cannot kill off an invalid process...");
 	}
 
 	else {
-		NSLog(@"[SelfDestruct] Loading into foreground process (%@), waiting for load to add bombers...", name);
-
-		[[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidFinishLaunchingNotification object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *notification){
-			NSLog(@"[SelfDestruct] Detected completed launch (%@), preparing for bomb drop...", name);
-			[[NSDistributedNotificationCenter defaultCenter] addObserverForName:@"SDDropBomb" object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *notification){
-				NSLog(@"[SelfDestruct] %@, have a nice day!", name);
-				system([[NSString stringWithFormat:@"killall -9 %@", name] UTF8String]);
-			}];
-		}];
-
-		[[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidEnterBackgroundNotification object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *notification){
-			NSLog(@"[SelfDestruct] Detected completed resignation (%@), removing previous bombers...", name);
-			[[NSDistributedNotificationCenter defaultCenter] removeObserver:nil name:@"SDDropBomb" object:nil];
-		}];
-
+		NSString *name = [[NSBundle bundleWithIdentifier:front] objectForInfoDictionaryKey:@"CFBundleDisplayName"];
+		NSLog(@"[SelfDestruct] %@, have a nice day!", name);
+		system([[NSString stringWithFormat:@"killall -9 %@", name] UTF8String]);
 	}
+
+	[event setHandled:YES];
 }
+
++ (void)load {
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	[[LAActivator sharedInstance] registerListener:[self new] forName:@"libactivator.SelfDestruct"];
+	[pool release];
+}
+
+@end

@@ -6,11 +6,10 @@ include theos/makefiles/common.mk
 
 TWEAK_NAME = SelfDestruct
 SelfDestruct_FILES = SelfDestruct.xm
-SelfDestruct_FRAMEWORKS = UIKit
+SelfDestruct_LDFLAGS = -lactivator -Ltheos/lib
+SelfDestruct_PRIVATE_FRAMEWORKS = SpringBoardServices
 
 include $(THEOS_MAKE_PATH)/tweak.mk
-SUBPROJECTS = SDListener
-include $(THEOS_MAKE_PATH)/aggregate.mk
 
 internal-after-install::
 	install.exec "killall -9 backboardd"
