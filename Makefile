@@ -7,6 +7,7 @@ include theos/makefiles/common.mk
 TWEAK_NAME = SelfDestruct
 SelfDestruct_FILES = SelfDestruct.xm
 SelfDestruct_LDFLAGS = -lactivator -Ltheos/lib
+SelfDestruct_FRAMEWORKS = UIKit
 SelfDestruct_PRIVATE_FRAMEWORKS = SpringBoardServices
 
 include $(THEOS_MAKE_PATH)/tweak.mk
